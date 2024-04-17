@@ -71,6 +71,7 @@ make geth
     --http.corsdomain "*" \
     --port "30313" \
     --maxpeers 5 \
+    --syncmode full \
     --http.api "admin,eth,debug,miner,net,txpool,personal,web3,ethash " \
     --allow-insecure-unlock \
     console 2>node1/geth.log
@@ -109,6 +110,7 @@ enode值长相如下所示：
     --http.corsdomain "*" \
     --port "30323" \
     --maxpeers 5 \
+    --syncmode full \
     --http.api "admin,eth,debug,miner,net,txpool,personal,web3,ethash " \
     --allow-insecure-unlock \
     --bootnodes "<第一个节点的enode值>" \
@@ -127,6 +129,7 @@ enode值长相如下所示：
     --http.corsdomain "*" \
     --port "30333" \
     --maxpeers 5 \
+    --syncmode full \
     --http.api "admin,eth,debug,miner,net,txpool,personal,web3,ethash " \
     --allow-insecure-unlock \
     --bootnodes "<第一个节点的enode值>" \
@@ -145,20 +148,26 @@ eth.accounts
 获取三个账户的余额（单位为wei）
 ```
 eth.getBalance("cc44e4c1a4ad2af0632cc4a016d9e1953ec5cc0a")
+```
+```
 eth.getBalance("2b428f6430af683ea4adfe30016407747db905a4")
+```
+```
 eth.getBalance("a2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0")
 ```
 
 单位从wei换算为ether（以太币）：
 ```
-web3.fromWei(eth.getBalance(eth.accounts[0]),'ether')
+web3.fromWei(eth.getBalance("cc44e4c1a4ad2af0632cc4a016d9e1953ec5cc0a"),'ether')
+```
+```
+web3.fromWei(eth.getBalance("2b428f6430af683ea4adfe30016407747db905a4"),'ether')
+```
+```
+web3.fromWei(eth.getBalance("a2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0"),'ether')
 ```
 
 尝试从node3的account转账到node2的account：
-```
-amount = web3.toWei(5,'ether')
-web3.fromWei(eth.getBalance(eth.accounts[0]),'ether')
-```
 
 在node3的console转账之前需要先解锁账户，我们用的是HTTP协议，所以需要```--allow-insecure-unlock```避免解锁失败：
 ```
@@ -167,7 +176,7 @@ personal.unlockAccount(eth.accounts[0])
 
 在node3的console执行发送转账transaction：
 ```
-eth.sendTransaction({from:"0xa2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0",to:"0x2b428f6430af683ea4adfe30016407747db905a4",value:amount})
+eth.sendTransaction({from:"0xa2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0",to:"0x2b428f6430af683ea4adfe30016407747db905a4",value:web3.toWei(5,'ether')})
 ```
 
 在node3的console查询txpool状态：
@@ -175,9 +184,13 @@ eth.sendTransaction({from:"0xa2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0",to:"0x2b4
 txpool.status
 ```
 
-在node1的console执行命令：
+在node1的console依次执行命令：
 ```
 txpool.status
+```
+```
 miner.start(1);admin.sleepBlocks(1);miner.stop();
+```
+```
 eth.getBlock(1)
 ```
