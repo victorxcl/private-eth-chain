@@ -31,7 +31,7 @@ make geth
 
 1. 建立三个节点文件夹：node1, node2, node3。
 
-2. 在每个文件夹里面新建了一个account。
+2. 在每个文件夹里面新建了一个account（该account默认会成为矿工的coinbase）。
 
 3. 为了尽量减少对后面脚本的修改，我预制了三个account，
    所有的account的password都是: **123456**
@@ -42,17 +42,17 @@ make geth
     ../go-ethereum.git/build/bin/geth --datadir node2 account new
     ../go-ethereum.git/build/bin/geth --datadir node3 account new
     ```
-    后面，就需要修改对应的account地址了（包括genesis.json里面的预分配代币的account地址）。
+    - 后面，就需要修改对应的account地址了（包括genesis.json里面的预分配代币的account地址）。
     ![文件夹结构](pic/genesis.png)
 
-## 每个node文件夹里面创建一个account。这个account默认作为挖矿的coinbase。
+   - 检测创建account是否成功：
+        ```
+        ../go-ethereum.git/build/bin/geth --datadir node1 account list
+        ../go-ethereum.git/build/bin/geth --datadir node2 account list
+        ../go-ethereum.git/build/bin/geth --datadir node3 account list
+        ```
 
-```
-../go-ethereum.git/build/bin/geth --datadir node1 account list
-../go-ethereum.git/build/bin/geth --datadir node2 account list
-../go-ethereum.git/build/bin/geth --datadir node3 account list
-```
-
+## 在private-eth-chain.git文件夹里面对三个node执行初始化：
 ```
 ../go-ethereum.git/build/bin/geth --datadir node1 init genesis.json
 ../go-ethereum.git/build/bin/geth --datadir node2 init genesis.json
@@ -76,7 +76,7 @@ make geth
     console 2>node1/geth.log
 ```
 
---allow-insecure-unlock参数表示可以通过HTTP协议解锁account（我们的测试私链，不想整复杂的HTTPS）。
+```--allow-insecure-unlock```参数表示可以通过HTTP协议解锁account（我们的测试私链，不想整复杂的HTTPS）。
 
 注意上面的输出重定向到了各自节点的geth.log文件里面。可以通过：
 
@@ -92,6 +92,11 @@ admin.nodeInfo.enode
 ```
 获得该节点的enode值，后面需要用到。
 
+enode值长相如下所示：
+```
+"enode://db13635cf83cd57047446cdf2f884a7d0c622593c0d40004db52878a365d1314e3160585d5128f32ce7b5a27ec5cd0cf90db37fc821593af6a9f5c5e3024d65d@127.0.0.1:30313"
+```
+
 
 ## 启动第二个节点（需要用到第一个节点的enode值）：
 ```
@@ -106,7 +111,7 @@ admin.nodeInfo.enode
     --maxpeers 5 \
     --http.api "admin,eth,debug,miner,net,txpool,personal,web3,ethash " \
     --allow-insecure-unlock \
-    --bootnodes "enode://db13635cf83cd57047446cdf2f884a7d0c622593c0d40004db52878a365d1314e3160585d5128f32ce7b5a27ec5cd0cf90db37fc821593af6a9f5c5e3024d65d@127.0.0.1:30313" \
+    --bootnodes "<第一个节点的enode值>" \
     console 2>node2/geth.log
 ```
 记得替换--bootnodes的参数为第一个节点的enode值。
@@ -124,14 +129,11 @@ admin.nodeInfo.enode
     --maxpeers 5 \
     --http.api "admin,eth,debug,miner,net,txpool,personal,web3,ethash " \
     --allow-insecure-unlock \
-    --bootnodes "enode://db13635cf83cd57047446cdf2f884a7d0c622593c0d40004db52878a365d1314e3160585d5128f32ce7b5a27ec5cd0cf90db37fc821593af6a9f5c5e3024d65d@127.0.0.1:30313" \
+    --bootnodes "<第一个节点的enode值>" \
     console 2>node3/geth.log
 ```
 
 记得替换--bootnodes的参数为第一个节点的enode值。
-
-
-    --nodiscover \
 
 ## 对三个节点的私有链进行简单的测试
 
@@ -152,17 +154,30 @@ eth.getBalance("a2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0")
 web3.fromWei(eth.getBalance(eth.accounts[0]),'ether')
 ```
 
-尝试转账：
+尝试从node3的account转账到node2的account：
 ```
 amount = web3.toWei(5,'ether')
 web3.fromWei(eth.getBalance(eth.accounts[0]),'ether')
+```
 
+在node3的console转账之前需要先解锁账户，我们用的是HTTP协议，所以需要```--allow-insecure-unlock```避免解锁失败：
+```
 personal.unlockAccount(eth.accounts[0])
+```
 
-eth.sendTransaction({from:eth.accounts[0],to:eth.accounts[1],value:web3.toWei(1,"ether")})
-eth.sendTransaction({from:eth.accounts[0],to:"0xc9194a8ea28d76389af4c7e9c81222386a6ab47a",value:amount})
+在node3的console执行发送转账transaction：
+```
+eth.sendTransaction({from:"0xa2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0",to:"0x2b428f6430af683ea4adfe30016407747db905a4",value:amount})
+```
 
+在node3的console查询txpool状态：
+```
+txpool.status
+```
+
+在node1的console执行命令：
+```
 txpool.status
 miner.start(1);admin.sleepBlocks(1);miner.stop();
-eth.getBlock(180)
+eth.getBlock(1)
 ```
