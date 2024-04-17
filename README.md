@@ -3,13 +3,47 @@ demonstrate how to run ethereum private chain
 
 https://www.cnblogs.com/wkfvawl/p/11211600.html
 
-为了简单，所有的account的password: 123456
+另外，这里采用的是go-ethereum的1.10.7版本的代码。
+
+## 准备工作
+新建一个文件夹，然后执行clone命令：
 
 ```
-../go-ethereum.git/build/bin/geth --datadir node1 account new
-../go-ethereum.git/build/bin/geth --datadir node2 account new
-../go-ethereum.git/build/bin/geth --datadir node3 account new
+git clone https://github.com/ethereum/go-ethereum.git go-ethereum.git 
+git clone https://github.com/victorxcl/private-eth-chain.git private-eth-chain.git
 ```
+
+然后进入go-ethereun.git文件夹，切换到分支1.10：
+```
+git checkout release/1.10
+```
+
+最后，我们build以太坊命令行工具：
+```
+make geth
+```
+
+编译之后的geth的位置：
+![文件夹结构](pic/folders01.png)
+
+我们的私链文件夹结构如下：
+![文件夹结构](pic/folders02.png)
+
+1. 建立三个节点文件夹：node1, node2, node3。
+
+2. 在每个文件夹里面新建了一个account。
+
+3. 为了尽量减少对后面脚本的修改，我预制了三个account，
+   所有的account的password都是: **123456**
+   
+4. 如果不想使用预制的account，可以按照如下的脚本自己创建：
+    ```
+    ../go-ethereum.git/build/bin/geth --datadir node1 account new
+    ../go-ethereum.git/build/bin/geth --datadir node2 account new
+    ../go-ethereum.git/build/bin/geth --datadir node3 account new
+    ```
+    后面，就需要修改对应的account地址了（包括genesis.json里面的预分配代币的account地址）。
+    ![文件夹结构](pic/genesis.png)
 
 ## 每个node文件夹里面创建一个account。这个account默认作为挖矿的coinbase。
 
@@ -20,9 +54,9 @@ https://www.cnblogs.com/wkfvawl/p/11211600.html
 ```
 
 ```
-../go-ethereum.git/build/bin/geth --datadir node1 init CustomGenesis.json
-../go-ethereum.git/build/bin/geth --datadir node2 init CustomGenesis.json
-../go-ethereum.git/build/bin/geth --datadir node3 init CustomGenesis.json
+../go-ethereum.git/build/bin/geth --datadir node1 init genesis.json
+../go-ethereum.git/build/bin/geth --datadir node2 init genesis.json
+../go-ethereum.git/build/bin/geth --datadir node3 init genesis.json
 ```
 
 ## 启动第一个节点，也是我们的挖矿节点：
