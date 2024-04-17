@@ -91,7 +91,8 @@ tail -f geth.log
 ```
 admin.nodeInfo.enode
 ```
-获得该节点的enode值，后面需要用到。
+获得该节点的enode值（**确保enode的IP是127.0.0.1网段**），后面需要用到。
+
 
 enode值长相如下所示：
 ```
@@ -118,6 +119,12 @@ enode值长相如下所示：
 ```
 记得替换--bootnodes的参数为第一个节点的enode值。
 
+该节点启动成功后，在node1的console里面输入命令：
+```
+net.peerCount
+```
+来查询当前的peer的数量，大于零表示各个节点找到对方了。
+
 ## 启动第三个节点（需要用到第一个节点的enode值）：
 ```
 ../go-ethereum.git/build/bin/geth \
@@ -137,6 +144,18 @@ enode值长相如下所示：
 ```
 
 记得替换--bootnodes的参数为第一个节点的enode值。
+
+该节点启动成功后，在node1的console里面输入命令：
+```
+net.peerCount
+```
+来查询当前的peer的数量，大于零表示各个节点找到对方了。
+
+最后，在node1的console里面输入命令：
+```
+admin.peers
+```
+这样会列出所有的peers。
 
 ## 对三个节点的私有链进行简单的测试
 
@@ -193,4 +212,15 @@ miner.start(1);admin.sleepBlocks(1);miner.stop();
 ```
 ```
 eth.getBlock(1)
+```
+
+转账成功之后，再次查询三个账户的余额：
+```
+web3.fromWei(eth.getBalance("cc44e4c1a4ad2af0632cc4a016d9e1953ec5cc0a"),'ether')
+```
+```
+web3.fromWei(eth.getBalance("2b428f6430af683ea4adfe30016407747db905a4"),'ether')
+```
+```
+web3.fromWei(eth.getBalance("a2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0"),'ether')
 ```
