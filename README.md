@@ -224,3 +224,21 @@ web3.fromWei(eth.getBalance("2b428f6430af683ea4adfe30016407747db905a4"),'ether')
 ```
 web3.fromWei(eth.getBalance("a2c37f91fd94fb55a1d8a7f0d1fb75e1b28355b0"),'ether')
 ```
+
+## 调试
+1. 启动。采用launch.json的形式（在本git仓库里面将其重命名为debugger.json，避免直接使用）
+
+    ![debug01](pic/debug02.png)
+
+注意替换上图中的必须手动指定的**两个参数**。
+
+2. 找到```geth.ipc```的路径，如图所示：
+
+    ![debug01](pic/debug01.png)
+
+在VSC(Visual Studio Code)启动调试器后，在VSC的Terminal里面再执行命令：
+```
+./build/bin/geth attach <your-path>/geth.ipc
+```
+
+这样之后，就可以输入调试命令了。
